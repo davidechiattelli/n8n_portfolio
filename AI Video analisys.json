@@ -1,0 +1,1043 @@
+{
+  "name": "AI Video analisys",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/upload/v1beta/files",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Goog-Upload-Command",
+              "value": "start, upload, finalize"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Length",
+              "value": "={{$binary.data.fileSize }}"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Type",
+              "value": "={{ $binary.data.fileType }}/{{ $binary.data.fileExtension }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $binary.data.fileType }}/{{ $binary.data.fileExtension }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        176
+      ],
+      "id": "336e77a7-0e5b-4303-acf3-2fd0fc948249",
+      "name": "Upload to Gemini1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "QUTUX6nwOVlXCly2",
+          "name": "IMGBB"
+        },
+        "httpHeaderAuth": {
+          "id": "VppFfXSUnNQXcI7w",
+          "name": "ILR - Gemini auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n      \"contents\": [{\n        \"role\":\"user\",\n        \"parts\":[\n          {\"file_data\":{\n            \"file_uri\": \"{{ $json.file.uri }}\",\n            \"mimeType\": \"{{ $json.file.mimeType }}\"\n            }},\n          {\"text\": \"Descrivi cosa avviene nel video in maniera estremamente dettagliata. Descrivi l'intero video\"}]\n        }]\n      }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -880,
+        176
+      ],
+      "id": "6a89f9e8-bed6-4853-a689-e03f76d251b5",
+      "name": "Get Analysis1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "VppFfXSUnNQXcI7w",
+          "name": "ILR - Gemini auth"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        272
+      ],
+      "id": "e35327a1-3d0c-492e-9c72-7acd06d3edac",
+      "name": "Wait 5s1",
+      "webhookId": "7aa81754-0ad1-4825-9f31-f056f98c94bf"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a98a575e-9bef-48bd-9c3d-14c0b740eba2",
+              "name": "text",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -672,
+        80
+      ],
+      "id": "5ebd349d-20bd-473f-ad34-6897ed567d01",
+      "name": "Set field"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1520,
+        176
+      ],
+      "id": "b265b634-13cc-4dd5-b7de-9dcd524f2f99",
+      "name": "When chat message received",
+      "webhookId": "336aafe9-2266-491e-8841-4bd10e0cb029"
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        80
+      ],
+      "id": "a75b7fa5-3fde-4a29-a755-bb6e8a2473ed",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.video.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1296,
+        176
+      ],
+      "id": "ac7c9847-78c7-4e83-beef-2d3a9eb23c59",
+      "name": "Video download"
+    }
+  ],
+  "pinData": {
+    "Upload to Gemini1": [
+      {
+        "json": {
+          "file": {
+            "name": "files/ncutxu3qkeqn",
+            "mimeType": "video/mp4",
+            "sizeBytes": "13630233",
+            "createTime": "2025-08-11T13:28:16.874992Z",
+            "updateTime": "2025-08-11T13:28:16.874992Z",
+            "expirationTime": "2025-08-13T13:28:16.234002928Z",
+            "sha256Hash": "ZDk0NWRiY2Q4NTEwM2QzY2NjNTYxMzA1ZTY3ZTk4ZDFjMWI1MmE5OThmMTUwMzhhM2MzMmYzYWE3MTVjOTI0Zg==",
+            "uri": "https://generativelanguage.googleapis.com/v1beta/files/ncutxu3qkeqn",
+            "state": "PROCESSING",
+            "source": "UPLOADED"
+          }
+        }
+      },
+      {
+        "json": {
+          "file": {
+            "name": "files/ulsnog31gkf9",
+            "mimeType": "video/mp4",
+            "sizeBytes": "5713645",
+            "createTime": "2025-08-11T13:28:16.507957Z",
+            "updateTime": "2025-08-11T13:28:16.507957Z",
+            "expirationTime": "2025-08-13T13:28:15.902611508Z",
+            "sha256Hash": "YjFhMDQ2MWFhYjM2OGZlMDQ5NWU4NjJhYjIwYzVjZGNiZWFjNTMwZmRkNDdmOTY0YzNjZmU1YjNmYzg0ODM1YQ==",
+            "uri": "https://generativelanguage.googleapis.com/v1beta/files/ulsnog31gkf9",
+            "state": "PROCESSING",
+            "source": "UPLOADED"
+          }
+        }
+      },
+      {
+        "json": {
+          "file": {
+            "name": "files/gri5yyulh5ix",
+            "mimeType": "video/mp4",
+            "sizeBytes": "8391974",
+            "createTime": "2025-08-11T13:28:16.832190Z",
+            "updateTime": "2025-08-11T13:28:16.832190Z",
+            "expirationTime": "2025-08-13T13:28:16.158045993Z",
+            "sha256Hash": "YzlhMmY0MWUyZjFmNWU4NjcyMzhhYmU2ODgzZTM2M2IwNmU1ZGIyOTRiM2I4ZGZhZmExZTdkY2MyMmVlOTg1Yg==",
+            "uri": "https://generativelanguage.googleapis.com/v1beta/files/gri5yyulh5ix",
+            "state": "PROCESSING",
+            "source": "UPLOADED"
+          }
+        }
+      },
+      {
+        "json": {
+          "file": {
+            "name": "files/2g2tmfqa9jn3",
+            "mimeType": "video/mp4",
+            "sizeBytes": "6063728",
+            "createTime": "2025-08-11T13:28:16.666725Z",
+            "updateTime": "2025-08-11T13:28:16.666725Z",
+            "expirationTime": "2025-08-13T13:28:16.018013827Z",
+            "sha256Hash": "Y2M3NjZkOGFlNjAyNmE1ZTM0MDliNGMxZWM3ZjZlYzUzYThjOWMyNDAwM2U4ZGNiOTNkMmU5M2Y3YTIxMmFlOQ==",
+            "uri": "https://generativelanguage.googleapis.com/v1beta/files/2g2tmfqa9jn3",
+            "state": "PROCESSING",
+            "source": "UPLOADED"
+          }
+        }
+      },
+      {
+        "json": {
+          "file": {
+            "name": "files/q2a82k1gp8zn",
+            "mimeType": "video/mp4",
+            "sizeBytes": "5713645",
+            "createTime": "2025-08-11T13:28:16.283671Z",
+            "updateTime": "2025-08-11T13:28:16.283671Z",
+            "expirationTime": "2025-08-13T13:28:15.954487222Z",
+            "sha256Hash": "YjFhMDQ2MWFhYjM2OGZlMDQ5NWU4NjJhYjIwYzVjZGNiZWFjNTMwZmRkNDdmOTY0YzNjZmU1YjNmYzg0ODM1YQ==",
+            "uri": "https://generativelanguage.googleapis.com/v1beta/files/q2a82k1gp8zn",
+            "state": "PROCESSING",
+            "source": "UPLOADED"
+          }
+        }
+      }
+    ],
+    "Get Analysis1": [
+      {
+        "json": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "Il video inizia con un effetto visivo di distorsione ondulata su uno sfondo scuro con tonalità rossastre e bluastre. Al centro dello schermo appare il testo \"Il Club della Chirurgia Estetica\" in bianco, con un'ombra nera. L'immagine sottostante, inizialmente molto distorta, si rivela essere un primo piano di una donna, probabilmente la conduttrice, con capelli lunghi e biondi e un trucco sugli occhi scuro.\n\nLa narrazione prosegue attraverso una serie di brevi clip di interviste, sempre con la stessa conduttrice che pone domande sulla chirurgia estetica e vari ospiti che rispondono. Il testo \"Il Club della Chirurgia Estetica\" rimane fisso in basso al centro dello schermo per tutta la durata del video.\n\nEcco una descrizione dettagliata di ogni segmento:\n\n1.  **0:00 - 0:04: La Conduttrice e la sua \"relazione\" con la chirurgia estetica.**\n    *   **Visivo:** La conduttrice, bionda con lunghi capelli ondulati, indossa un top nero con uno scollo. Ha degli orecchini pendenti a forma di foglia dorata. Lo sfondo è scuro con strisce luminose rosse.\n    *   **Audio:** La conduttrice chiede: \"La chirurgia estetica che rapporto ha?\" Una voce fuori campo (che si rivelerà essere la sua) risponde: \"Nessuno.\" La conduttrice: \"Non l'ha mai frequentata?\" Voce: \"No.\"\n    *   **Osservazione:** La conduttrice appare molto naturale, e la sua negazione sembra credibile.\n\n2.  **0:04 - 0:07: Ospite 1 (Ilary Blasi) e il \"seguire\" la chirurgia estetica.**\n    *   **Visivo:** Una donna bionda (Ilary Blasi) con capelli lisci e labbra visibilmente carnose, indossa un top scuro. Lo sfondo è blu con un'immagine stilizzata e sfocata di un felino dagli occhi gialli.\n    *   **Audio:** La donna sorride e risponde: \"La seguo... mi piace.\"\n    *   **Osservazione:** C'è una palese contraddizione tra la sua affermazione di \"seguirla\" e il suo aspetto, che suggerisce un uso evidente di procedure estetiche.\n\n3.  **0:07 - 0:11: La Conduttrice e Ospite 1 sulla \"frequentazione\".**\n    *   **Visivo:** Si alterna tra la conduttrice (che ride) e Ospite 1 (che gesticola vicino al viso).\n    *   **Audio:** La conduttrice chiede: \"Mi seguite?\" Ospite 1 ridacchia e dice: \"Ci seguiamo.\" La conduttrice: \"Vi seguite?\" Ospite 1: \"Ci seguiamo. Su Instagram.\"\n    *   **Osservazione:** Il dialogo è giocoso, ma l'ironia è palpabile data la precedente affermazione di Ospite 1.\n\n4.  **0:11 - 0:14: La Conduttrice sul \"pentimento\" per interventi.**\n    *   **Visivo:** La conduttrice.\n    *   **Audio:** La conduttrice: \"Ha mai fatto qualcosa di cui poi si è pentita?\" Voce fuori campo: \"No.\"\n\n5.  **0:14 - 0:23: Ospite 2 (Daniela Martani) e i \"trattamenti\".**\n    *   **Visivo:** Inizia con uno split screen: a sinistra un'immagine distorta con linee rosse su sfondo nero, a destra un primo piano del viso di Ospite 2, una donna bionda con labbra molto pronunciate e occhi grandi. Poi la clip passa a un primo piano di Ospite 2 in un abito rosso. Le sue labbra sono molto grandi e il suo viso appare teso e privo di rughe.\n    *   **Audio:** Ospite 2, con un tono di voce leggermente strascicato, dice: \"Eh che ho fatto chissà che cosa...\" La conduttrice: \"Che ha fatto?\" Ospite 2: \"Una cosa un po' di dimagrimento, ma io più che altro, più che la chirurgia, credo molto nei trattamenti.\"\n    *   **Osservazione:** L'aspetto di Ospite 2 è chiaramente molto alterato, rendendo la sua affermazione di aver fatto \"solo un po' di dimagrimento\" e di credere nei \"trattamenti\" molto ironica.\n\n6.  **0:23 - 0:33: Ospite 3 (Alessandro Cecchi Paone) e il gonfiore da tiroide.**\n    *   **Visivo:** Un uomo con capelli scuri, occhiali e una giacca blu su camicia bianca (Alessandro Cecchi Paone). Appare piuttosto naturale, non particolarmente alterato.\n    *   **Audio:** L'uomo spiega: \"Perché ho avuto un problema alla tiroide, eh, ho avuto una cosa di tiroidite, un'allergia al farmaco che prendevo. Quel giorno ero leggermente più gonfio, ho detto 'vabbè, che me frega, ci vado lo stesso in televisione'.\"\n    *   **Osservazione:** La sua spiegazione medica è una potenziale giustificazione per un aspetto leggermente alterato, in contrasto con le evidenti modifiche degli altri ospiti.\n\n7.  **0:33 - 0:37: La Conduttrice ironizza sull'ialuronico.**\n    *   **Visivo:** La conduttrice, che ridacchia.\n    *   **Audio:** La conduttrice scherza: \"Dirai che fra 10 anni fa outing e dice 'non era cortisone, era ialuronico'.\"\n    *   **Osservazione:** Un commento diretto e sarcastico sulle scuse per l'aspetto alterato.\n\n8.  **0:37 - 0:57: Ospite 4 (Federico Fashion Style) e le sue negazioni.**\n    *   **Visivo:** Un uomo con barba curata, capelli acconciati all'indietro, numerosi orecchini vistosi e un abito di pelle nera. Ha labbra molto voluminose e zigomi pronunciati. Si alterna con la conduttrice. In un momento si vede una ripresa più ampia dello studio con l'uomo su uno schermo.\n    *   **Audio:** Ospite 4: \"Io non mi sono rifatto, eh.\" La conduttrice ride e dice: \"È vero!\" Ospite 4: \"Manco lei.\" La conduttrice: \"No.\" (ride) Ospite 4: \"Capisce?\" La conduttrice: \"Eh, dico sì.\" La conduttrice: \"Non ha fatto niente, niente?\" Ospite 4: \"Fatto il botox che se lo fanno credo tutti qua. Voi fate il botox?\" La conduttrice: \"Come no, e vabbè, dai.\" La conduttrice: \"Cioè, ma solo quello fa?\" Ospite 4: \"Solo quello.\" La conduttrice: \"Ah.\" Ospite 4: \"Mi ho fatto un'addominoplastica, basta.\" La conduttrice: \"Eh, adesso me lo dice.\"\n    *   **Osservazione:** Il segmento è molto comico. L'uomo nega categoricamente gli interventi, poi ammette il botox (minimizzandolo) e infine, con nonchalance, rivela un'operazione ben più invasiva come l'addominoplastica, creando un effetto sorpresa esilarante.\n\n9.  **0:57 - 1:26: Ospite 5 (Loredana Bertè) e il tempo per i lifting.**\n    *   **Visivo:** La conduttrice ora indossa un blazer bianco. Ospite 5 (Loredana Bertè) è una donna bionda con un'acconciatura voluminosa, trucco pesante, e un colletto alto e increspato. Il suo viso appare molto levigato e teso. In un momento, viene mostrata una foto in bianco e nero di una donna dall'aspetto drammaticamente modificato.\n    *   **Audio:** La conduttrice: \"E con la chirurgia estetica, lei è...\" La conduttrice: \"Stava sempre tutto bene, o qualche volta magari ha esagerato?\" Ospite 5: \"Io non mi sono mai fatta niente.\" La conduttrice: \"Non ha mai fatto niente? Niente, niente?\" Ospite 5: \"Io sono così adesso, si vede, no?\" La conduttrice ride. Ospite 5: \"Qualche iniezioncino.\" La conduttrice ride. La conduttrice: \"E che si rifarebbe?\" Ospite 5: \"Eh, io mi farei un bel lifting, obiettivamente.\" La conduttrice: \"Un bel lifting.\" Ospite 5: \"Però ci vuole tempo, e io non ho tempo.\" La conduttrice: \"Quindi o rimandiamo...\" Ospite 5: \"Lo rimandiamo.\"\n    *   **Osservazione:** La negazione iniziale di Ospite 5 è forte, quasi provocatoria, dato il suo aspetto. L'ammissione di \"qualche iniezioncino\" è un eufemismo. La parte più divertente è la sua affermazione che si farebbe un lifting ma \"non ha tempo\", sottintendendo che è l'unica cosa che le manca per una modifica estetica ulteriore.\n\n10. **1:26 - 1:49: Ospite 6 (Vladimir Luxuria) e le \"cosette\".**\n    *   **Visivo:** La conduttrice torna a indossare il top nero. Ospite 6 (Vladimir Luxuria) è una donna bionda con lunghi capelli mossi, labbra molto voluminose e un trucco marcato. Si alterna con la conduttrice.\n    *   **Audio:** La conduttrice: \"Si piace? Fisicamente?\" Ospite 6: \"Io mi piaccio di più dopo tutte le cosette che ho fatto adesso.\" La conduttrice: \"Guardi, che s'è fatta?\" Ospite 6: \"Togliamo le orecchie?\" La conduttrice: \"Come togliamo le orecchie?\" Ospite 6: \"Se non ho toccato solo le orecchie...\" La conduttrice: \"Ah, l'unica cosa non...\" Ospite 6: \"Poi tutta la faccia l'ho ritoccata.\" La conduttrice ride: \"Lo ha rifatto il cappotto.\" La conduttrice: \"Rifatto gli esterni?\" La conduttrice: \"Qualcosa ha fatto però.\" Ospite 6: \"No.\" La conduttrice: \"Ma niente?\"\n    *   **Osservazione:** Ospite 6 ammette le modifiche chiamandole \"cosette\", poi fa una battuta assurda sul togliere le orecchie (sottintendendo di aver ritoccato *tutto* il resto), per poi negare ancora. Il paradosso è centrale.\n\n11. **1:49 - 2:03: Ospite 7 (Lisa Fusco) e le \"punturine\".**\n    *   **Visivo:** Ospite 7 (Lisa Fusco) è una donna dai capelli lunghi e scuri, indossa un blazer bianco e nero, con uno scollo che mette in evidenza il seno. Le sue labbra sono molto pronunciate. Si alterna con la conduttrice che legge da un quaderno rosso.\n    *   **Audio:** La conduttrice: \"Lei ha detto: 'Sono rifatta dall'ombelico in su'.\" Ospite 7: \"Eh.\" La conduttrice: \"Seni rifatto, la bocca?\" Ospite 7: \"Le punturine.\" La conduttrice: \"Il naso, le... tutta punturine.\" Ospite 7: \"Tutte punturine.\" La conduttrice (indicando il naso): \"Ma il naso come punturine, sarà?\" Ospite 7: \"Tutte punturine.\"\n    *   **Osservazione:** Nonostante la conduttrice citi una sua precedente ammissione di essere \"rifatta dall'ombelico in su\", Ospite 7 continua a minimizzare tutto come semplici \"punturine\", anche per interventi più complessi come il naso.\n\n12. **2:03 - 2:19: Ospite 8 (Donatella Rettore) e la reiterazione della \"mancanza di tempo\".**\n    *   **Visivo:** La conduttrice torna al blazer bianco. Ospite 8 (Donatella Rettore) è una donna con capelli scuri raccolti in uno chignon, trucco molto marcato (soprattutto rossetto rosso e eyeliner), indossa una giacca a righe scure e vistose collane con croci. Il suo viso appare molto alterato, in particolare le labbra e la pelle liscia.\n    *   **Audio:** La conduttrice: \"Ha modificato qualcosa con la chirurgia estetica o con la medicina? Si è aiutata?\" Ospite 8: \"No, non ho fatto niente.\" La conduttrice ride: \"Qualche iniezioncino?\" Ospite 8: \"Qualche iniezioncino.\" La conduttrice ride: \"Bel lifting, grande citazione.\" Ospite 8: \"Quello sì, quello sì. Poi uno non ha tempo.\" La conduttrice: \"Eh?\" Ospite 8: \"No, io qualche iniezioncino.\"\n    *   **Osservazione:** L'intervista con Ospite 8 chiude il video in modo simile a Loredana Bertè, con una negazione iniziale seguita da una minimizzazione (\"qualche iniezioncino\") e infine la scusa della \"mancanza di tempo\" per ulteriori procedure, nonostante le evidenti modifiche già presenti.\n\nIl video gioca sull'ironia e sul contrasto tra le dichiarazioni degli intervistati e il loro aspetto fisico, mettendo in luce la cultura della chirurgia estetica e le spesso palesi negazioni da parte di chi ne fa uso."
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 41024,
+            "candidatesTokenCount": 3233,
+            "totalTokenCount": 49530,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 19
+              },
+              {
+                "modality": "VIDEO",
+                "tokenCount": 36557
+              },
+              {
+                "modality": "AUDIO",
+                "tokenCount": 4448
+              }
+            ],
+            "thoughtsTokenCount": 5273
+          },
+          "modelVersion": "gemini-2.5-flash",
+          "responseId": "L_OZaILVJY2dkdUP7LPwgQ4"
+        }
+      },
+      {
+        "json": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "Il video si apre in un ambiente che appare essere una sala operatoria moderna. Le pareti sono chiare, probabilmente di colore bianco o beige chiaro, e l'illuminazione è molto luminosa, fornita da plafoniere a incasso e da una grande lampada chirurgica a soffitto con bracci articolati e sei segmenti esagonali luminosi che emettono una luce brillante, con alcuni LED blu-verdi visibili.\n\nA sinistra, parzialmente visibile, c'è una persona in divisa chirurgica blu scuro. Al centro, in primo piano, c'è una donna.\n**00:00 - 00:04** La donna, con la pelle abbronzata, indossa una divisa chirurgica blu scuro, compresa una cuffietta dello stesso colore. Ha una collana di perle al collo e un cordino blu e azzurro con un cartellino identificativo appeso. Le sue unghie sono dipinte di rosso. Parla direttamente alla telecamera con un sorriso rassicurante e un tono accogliente.\nContemporaneamente, compaiono delle scritte in sovrimpressione: prima \"CIAO A TUTTI OGGI\", poi \"SIAMO IN COMPAGNIA\", e infine \"DEL NOSTRO PROFESSOR ZANNETTI\".\n\n**00:04 - 00:11** La telecamera si sposta leggermente verso sinistra, inquadrando completamente un uomo anziano in divisa chirurgica blu scuro e cuffietta blu, che indossa una mascherina chirurgica azzurra abbassata sotto il mento. Ha una barba bianca ben curata e occhiali trasparenti. Un piccolo microfono è agganciato alla sua divisa. L'uomo si presenta come il Dott. Zanetti, responsabile del servizio di Anestesia e Terapia Intensiva della Clinica Ruesch. Parla con calma e professionalità, tenendo le mani giunte davanti a sé.\nAnche qui, appaiono scritte in sovrimpressione che seguono il suo discorso: \"BUONGIORNO MI PRESENTO\", \"SONO IL DOTT. ZANNETTI RESPONSABILE\", \"DEL SERVIZIO DI ANESTESIA\", e \"INTENSIVA DELLA CLINICA RUESCH\".\n\n**00:11 - 00:16** L'inquadratura torna sulla donna, che prosegue il discorso introducendo il tema della paura dell'anestesia tra i pazienti. Le scritte in sovrimpressione indicano: \"SPESSO DURANTE LE\", \"CONSULENZE\", \"I NOSTRI PAZIENTI SONO\", e \"TERRORIZZATI DALL'ANESTESIA\".\n\n**00:16 - 00:17** L'immagine cambia, mostrando un primo piano di una macchina per anestesia della marca \"Dräger Primus\". Sulla sua superficie blu, sono allineate diverse siringhe di varie dimensioni, alcune piene di liquidi trasparenti o biancastri, pronte per l'uso. Un paio di forbici mediche è appeso al lato della macchina. Si intravede anche un monitor spento.\n\n**00:17 - 00:23** Si ritorna all'inquadratura dei due medici. Il Dott. Zanetti prende la parola, spiegando che la paura dell'anestesia è un \"retaggio antico\". La telecamera effettua una panoramica lenta da destra a sinistra, mostrando l'ampiezza della sala operatoria, il lettino operatorio con un telo chirurgico azzurro e altre attrezzature mediche sullo sfondo.\nLe frasi in sovrimpressione accompagnano le sue parole: \"ALLORA LA PAURA\", \"DELL'ANESTESIA\", \"E' UN RETAGGIO ANTICO\", \"RISALE AGLI ALBORI DELLA\", \"NOSTRA DISCIPLINA\".\n\n**00:23 - 00:26** L'inquadratura si sposta nuovamente sui dettagli della macchina per anestesia, con un focus sulle siringhe sul vassoio blu. Una mano, presumibilmente quella di uno dei medici, prende una delle siringhe. Segue una rapida inquadratura del lettino operatorio con il telo azzurro, vista dall'estremità inferiore, con le luci chirurgiche che si riflettono sulla superficie liscia del telo. Il Dott. Zanetti afferma che \"oggi le cose sono cambiate sotto tanti aspetti\".\nLe scritte sullo schermo appaiono in sequenza: \"DEVO DIRE CHE OGGI\", \"LE COSE SONO CAMBIATE\", \"SOTTO TANTI ASPETTI\".\n\n**00:26 - 00:32** Si torna a inquadrare i due medici, poi si passa a un primo piano di un carrello medico, dove sono riposte numerose scatole di farmaci e fiale in un contenitore trasparente. Una mano afferra una scatola bianca di farmaci. Il Dott. Zanetti sottolinea come l'approccio farmacologico sia migliorato, con farmaci \"più maneggevoli e più sicuri\".\nLe scritte seguono il discorso: \"IL PRIMO E' SICURAMENTE\", \"L'APPROCCIO FARMACOLOGICO\", \"ABBIAMO DEI FARMACI\", \"CHE SONO ESTREMAMENTE\", \"PIU' MANEGGEVOLI\", \"E PIU' SICURI IL\".\n\n**00:32 - 00:46** L'immagine mostra un'asta per flebo con diverse pompe di infusione attaccate, con tubi trasparenti che si snodano da esse. Poi, un primo piano di un monitor paziente \"Dräger Infinity Delta\" che mostra dati vitali come la frequenza cardiaca (HR), la saturazione di ossigeno (SpO2), la pressione sanguigna non invasiva (NBP) e la frequenza del polso (PLS). Una mano tocca lo schermo per selezionare un'opzione relativa a un \"Nuovo paziente?\". Il Dott. Zanetti spiega che tutti i pazienti vengono valutati dagli anestesisti tramite una \"visita anestesiologica\" fatta in \"tempi adeguati\".\nLe scritte in sovrimpressione appaiono in sequenza rapida: \"SECONDO E' CHE TUTTI\", \"I PAZIENTI\", \"DEI QUALI IL CHIRURGO\", \"INDIVIDUA\", \"UNA NECESSITA' OPERATORIA\", \"VENGONO VALUTATI DA\", \"NOI ANESTESISTI\", \"PER CUI IL PUNTO CHIAVE\", \"DELL'INTERO PERCORSO\", \"E' LA VISITA\", \"ANESTESIOLOGICA\", \"CHE VIENE FATTA IN\", \"TEMPI ADEGUATI\".\n\n**00:46 - 00:56** Viene mostrata una ripresa dal basso delle luci chirurgiche, evidenziandone la complessità e la luminosità. L'inquadratura torna sui due medici che concludono il discorso, affermando che è fondamentale affidarsi a una struttura \"attrezzata\" come la Clinica Ruesch, che offre \"il meglio disponibile nelle tecnologie\" per affrontare \"qualsiasi problema\".\nLe scritte finali in sovrimpressione recitano: \"UNA VOLTA\", \"FATTO QUESTO E' NECESSARIO\", \"RIVOLGERSI A UNA\", \"STRUTTURA\", \"CHE SIA ATTREZZATA\", \"LA RUESCH HA IL\", \"MEGLIO DISPONIBILE\", \"NELL'AMBITO DELLE\", \"TECNOLOGIE PER\", \"POTER AFFRONTARE\", \"QUALSIASI PROBLEMA\".\n\n**00:56 - 01:00** Il video si conclude con una schermata bianca che mostra il logo \"Fabiana La Porta\" in caratteri blu, con la dicitura \"Consulente di Chirurgia e Medicina estetica\" sottostante. Un leggero suono metallico, simile a un \"ding\", accompagna la transizione, e il video svanisce nel bianco."
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 17719,
+            "candidatesTokenCount": 1772,
+            "totalTokenCount": 21814,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 19
+              },
+              {
+                "modality": "VIDEO",
+                "tokenCount": 15780
+              },
+              {
+                "modality": "AUDIO",
+                "tokenCount": 1920
+              }
+            ],
+            "thoughtsTokenCount": 2323
+          },
+          "modelVersion": "gemini-2.5-flash",
+          "responseId": "FvOZaMK8Jd_JnsEPu_P2yQE"
+        }
+      },
+      {
+        "json": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "The video opens with a close-up shot of a woman with long, vibrant blonde hair, styled with a full fringe (bangs). She is wearing a light-colored, possibly white, blazer or jacket over a darker top, and several necklaces are visible around her neck. Her nails are painted red. She has expressive blue eyes and a noticeable amount of makeup, including bold eyeliner and lipstick.\n\nShe stands behind a dark, possibly wooden, desk or table, with a black flat-screen monitor prominently displayed in front of her. To the right of the monitor, various desk items are visible, including a silver bell, a white ceramic mug, and a clear glass container with white, fluffy contents (possibly cotton balls or makeup sponges). To the left, a small portion of a person wearing a black and white polka-dot top is visible, suggesting someone else is also present but mostly out of frame. The background features light-colored, draped curtains, possibly indicating a window or a set design.\n\nThe woman is holding a blue pencil with a red eraser tip in her right hand, using it as a pointer. Her left hand is often open, gesturing.\n\n**0:00 - 0:02:** The woman begins speaking in Italian, exclaiming, \"Aurora Baruto!\" Her voice is enthusiastic and slightly theatrical. She points her pencil towards the monitor.\n\n**0:02 - 0:07:** On the monitor, a yellow rectangular banner at the top displays \"AURORA BARUTO.\" Below this, two side-by-side portrait images of a young woman are shown. The left image is labeled \"18 ANNI PRIMA\" (18 YEARS BEFORE) and shows a natural-looking blonde woman. The right image is labeled \"21 ANNI DOPO\" (21 YEARS AFTER) and features the same woman, but with more pronounced facial features, fuller lips, and styled hair. A phone number, \"TEL: 3397146644,\" is visible in the top right corner of the monitor.\nThe speaker explains, \"È bella, perché era una bella ragazza, ora è una principessa!\" (She is beautiful, because she was a beautiful girl, now she is a princess!). She gestures with both hands to emphasize her words.\n\n**0:07 - 0:15:** The woman brings the pencil closer to the screen and points directly at the nose of the woman in the \"18 ANNI PRIMA\" (left) image. She continues her commentary: \"Cosa dire? Ancora una volta abbiamo un viso che se scolpito bene dalla medicina estetica...\" (What to say? Once again we have a face that, if sculpted well by aesthetic medicine...). She maintains a direct gaze at the camera, her expression serious and focused.\n\n**0:15 - 0:20:** She moves the pencil from the nose area to the mouth of the \"18 ANNI PRIMA\" image, then sweeps it across to the corresponding fuller lips on the \"21 ANNI DOPO\" image. She says, \"...può diventare stupendo. Naso rifatto, bocca rifatta...\" (...can become stunning. Nose redone, mouth redone...).\n\n**0:20 - 0:30:** She continues, \"...ancora una volta. Qui vediamo, forse ha tolto le bolle del Bichat, sono delle bolle di grasso che sono presenti proprio qua, all'interno della parte della guancia destra o sinistra.\" (...once again. Here we see, maybe she removed the Bichat fat pads, these are fat pads that are present right here, inside the right or left cheek part.) As she speaks, she first points the pencil at the cheek area of the \"18 ANNI PRIMA\" image. Then, she brings the pencil away from the screen and points it at her *own* cheek, specifically indicating the area where Bichat fat pads are located, slightly pursing her lips to demonstrate the effect of their removal. She then returns the pencil to point at the screen again, emphasizing the cheek differences between the two images.\n\n**0:30 - 0:41:** The woman concludes, \"Si tolgono, e il viso diventa molto più asciutto, anche perché era un po' troppo largo. Però direi che nel suo insieme, molto scintillosa, molto bellina, rifatta anche lei! Ciao a tutti!\" (They are removed, and the face becomes much leaner, also because it was a bit too wide. But I would say that overall, very sparkling, very pretty, she's also had work done! Hello everyone!). She gestures broadly with her right hand (still holding the pencil) and smiles widely at the camera, as if signing off. The video ends."
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 12409,
+            "candidatesTokenCount": 1002,
+            "totalTokenCount": 14927,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 19
+              },
+              {
+                "modality": "VIDEO",
+                "tokenCount": 11046
+              },
+              {
+                "modality": "AUDIO",
+                "tokenCount": 1344
+              }
+            ],
+            "thoughtsTokenCount": 1516
+          },
+          "modelVersion": "gemini-2.5-flash",
+          "responseId": "D_OZaM7DGJykvdIP1LTjuAM"
+        }
+      },
+      {
+        "json": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "Il video inizia con un'inquadratura di un uomo, il Dr. Giuseppe Ferrucci (come si legge sulla sua divisa), seduto a una scrivania scura. Indossa una divisa medica color teal e ha un orologio argentato al polso sinistro. Dietro di lui, appeso alla parete chiara, c'è un grande quadro colorato raffigurante un volto femminile stilizzato con colori vivaci (rosa, viola, giallo, verde e blu). Sullo sfondo si notano due palline decorative (una rossa e una turchese) e alcune scatole bianche che sembrano contenere prodotti medici.\n\n0:00-0:02: Una voce femminile fuori campo chiede: \"Dottore, ho bisogno di dimagrire e nessuna dieta funziona.\" Sulla parte superiore dello schermo appare una scritta bianca su sfondo blu: \"IL FARMACO CHE TI FA DIMAGRIRE\".\n\n0:02-0:05: Il Dottore si sporge in avanti, poi si tira leggermente indietro e guarda direttamente in camera. Solleva una penna iniettore bianca con dettagli viola e dice: \"Ecco.\" La voce femminile, con tono scherzoso, risponde: \"E che le devo fare, un autografo?\"\n\n0:05-0:12: Il Dottore, mentre parla, toglie il tappo della penna e mostra l'interno trasparente con la cartuccia del farmaco. Spiega: \"No. Questa non è una penna, ma è lo strumento che può aiutarti a perdere peso.\" Le parole chiave \"No\", \"penna\" e \"peso\" appaiono in sovrimpressione mentre le pronuncia.\n\n0:12-0:18: L'inquadratura si sposta su un primo piano della penna all'interno della sua scatola. Si legge chiaramente \"mounjaro\" e \"Demo Pen\" sull'etichetta del prodotto e \"mounjaro (tirzepatide) iniezione Demo KwikPen\" sulla scatola stessa. Il Dottore continua la sua spiegazione: \"Questa, infatti, è mounjaro, uno dei farmaci più efficaci nell'aiutarti a perdere peso.\" Le parole \"mounjaro\", \"farmaci\" e \"peso\" compaiono gradualmente sullo schermo.\n\n0:18-0:24: La ripresa torna sulle mani del Dottore, che maneggia la penna, mostrando come si svita la parte superiore per rivelare l'ago. Si intravede anche una scatola di \"Saxenda\" in sottofondo. Il Dottore avverte: \"Ma attenzione, come tutti i farmaci, non vanno presi spontaneamente, ma soltanto su prescrizione medica...\" Le parole \"attenzione\", \"farmaci\" e \"soltanto\" appaiono man mano.\n\n0:24-0:31: L'uomo è di nuovo seduto alla scrivania, gesticolando con la penna in mano mentre parla. Sulla scrivania sono ben visibili le scatole di \"Saxenda\" e \"Mounjaro\". Aggiunge: \"...e bisogna essere sempre seguiti da un professionista. Prima di iniziare il trattamento con questi farmaci...\" Le parole \"sempre\", \"professionista\", \"trattamento\" e \"farmaci\" appaiono come testo.\n\n0:31-0:40: La scena cambia e mostra un primo piano di mani che scrivono su un blocco note con una penna. La persona indossa una divisa medica verde chiaro e uno stetoscopio è visibile sullo sfondo. Il Dottore continua a parlare fuori campo: \"...è necessario fare un'attenta anamnesi preliminare, valutando le condizioni di salute, lo stile di vita e se ci sono eventuali patologie connesse.\" Le parole \"anamnesi\", \"preliminare\", \"condizioni\", \"vita\" e \"patologie\" appaiono in sovrimpressione.\n\n0:40-0:44: L'immagine mostra una donna con i capelli scuri che corre, vista di spalle, indossando abbigliamento sportivo color beige. Il Dottore prosegue la sua spiegazione: \"Oltre naturalmente ad essere accompagnato sempre da attività fisica.\" Le parole \"naturalmente\", \"essere\", \"da\" e \"attività fisica\" compaiono sullo schermo.\n\n0:44-0:51: Il Dottore è di nuovo seduto alla scrivania, scuotendo la testa. La scena si sposta su un primo piano di un grande hamburger con formaggio fuso. Il Dottore dice: \"Quindi non è che ci prendiamo il farmaco per dimagrire e poi ce ne andiamo tutte le sere al McDonald's, perché ovviamente in quel caso non funziona.\" Le parole \"che\", \"farmaco\", \"sere\", \"in\" e \"non funziona\" appaiono man mano.\n\n0:51-0:56: Il Dottore, con un sorriso, si rivolge alla telecamera, tenendo in mano la penna iniettore. Invita: \"Vi aspettiamo qui in Gold Clinic per valutare insieme se sono la soluzione più adatta a te.\" Le parole \"aspettiamo\", \"Clinic\", \"valutare\" e \"adatta\" vengono mostrate.\n\n0:56-1:01: Il video si conclude con il Dottore che, tenendo la penna, guarda la telecamera e poi abbassa lo sguardo, pensando. Chiede direttamente allo spettatore: \"E tu? Ne hai mai sentito parlare? Hai già provato questi farmaci?\" Appare il logo \"GOLD CLINIC MEDICAL BEAUTY\" con un simbolo \"+\" e la parola \"farmaci\" sotto. Le parole \"E tu?\", \"mai\", \"provato\" e \"farmaci\" appaiono progressivamente sullo schermo."
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 18309,
+            "candidatesTokenCount": 1268,
+            "totalTokenCount": 21665,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 19
+              },
+              {
+                "modality": "VIDEO",
+                "tokenCount": 16306
+              },
+              {
+                "modality": "AUDIO",
+                "tokenCount": 1984
+              }
+            ],
+            "thoughtsTokenCount": 2088
+          },
+          "modelVersion": "gemini-2.5-flash",
+          "responseId": "FPOZaMXNB8TMkdUPxOPoiA4"
+        }
+      },
+      {
+        "json": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "Ecco una descrizione estremamente dettagliata del video:\n\nIl video si apre con una donna, probabilmente un medico o infermiera, in piedi al centro di una sala operatoria moderna e ben illuminata. Indossa uno scrub di colore blu scuro, una cuffietta chirurgica dello stesso colore, una collana di perle, e un badge di identificazione appeso al collo con un cordino turchese. Ha i capelli raccolti, il trucco evidente e smalto rosso sulle unghie. La donna sorride leggermente mentre guarda verso la telecamera. Alla sua sinistra, parzialmente visibile, c'è un uomo, anch'egli in scrub blu scuro e cuffietta chirurgica. Il fondale è caratterizzato da pareti chiare, un tavolo operatorio coperto da un telo azzurro, e apparecchiature mediche all'avanguardia, incluse lampade chirurgiche esagonali a LED appese al soffitto.\n\nA 00:00, appare la scritta in sovrimpressione \"CIAO A TUTTI OGGI\", seguita rapidamente da \"SIAMO IN COMPAGNIA\" a 00:02, e \"DEL NOSTRO PROFESSOR ZANNETTI\" a 00:03. La donna inizia a parlare, presentando l'uomo.\n\nA 00:05, l'inquadratura si sposta sull'uomo, ora completamente visibile. Indossa anch'egli uno scrub blu scuro e una cuffietta chirurgica. Una mascherina chirurgica di colore azzurro è abbassata sotto il mento, rivelando una barba bianca. Parla alla telecamera, gesticolando leggermente con le mani giunte davanti a sé. La donna è visibile sullo sfondo a destra, ascoltando.\nLe scritte in sovrimpressione cambiano, a 00:05 appare \"BUONGIORNO MI PRESENTO\", seguito da \"SONO IL DOTT. ZANNETTI RESPONSABILE\" a 00:06, poi \"DEL SERVIZIO DI ANESTESIA\" a 00:08, e infine \"INTENSIVA DELLA CLINICA RUESCH\" a 00:10.\n\nA 00:11, l'inquadratura torna a mostrare entrambi i medici, con la donna in primo piano che ricomincia a parlare. Gesticola con le mani per enfatizzare il suo punto.\nLe scritte sullo schermo accompagnano le sue parole: \"SPESSO DURANTE LE\" a 00:12, \"CONSULENZE\" a 00:13, \"I NOSTRI PAZIENTI SONO\" a 00:14, e \"TERRORIZZATI DALL'ANESTESIA\" a 00:15.\n\nA 00:16, il video mostra un primo piano di un apparecchio per l'anestesia \"Dräger Primus\". Sono visibili diversi flaconi e siringhe contenenti liquidi trasparenti, posizionate su un vassoio blu estraibile della macchina. Sullo sfondo si intravedono altri strumenti medici e un monitor. La scritta \"TERRORIZZATI DALL'ANESTESIA\" rimane in sovrimpressione.\n\nA 00:17, l'inquadratura torna sui due medici. L'uomo riprende a parlare, spiegando come la paura dell'anestesia sia un \"retaggio antico\". Continua a gesticolare per enfasi.\nLe scritte sul video evidenziano i punti chiave del suo discorso: \"ALLORA LA PAURA\" a 00:17, \"DELL'ANESTESIA\" a 00:18, \"E' UN RETAGGIO ANTICO\" a 00:19, \"RISALE AGLI ALBORI DELLA\" a 00:20, e \"NOSTRA DISCIPLINA\" a 00:22.\n\nA 00:23, c'è un breve primo piano su una mano che afferra una delle siringhe dal vassoio dell'apparecchio Dräger. Sullo sfondo sfocato si vede il letto operatorio coperto dal telo azzurro.\nLe scritte a video sono \"DEVO DIRE CHE OGGI\" a 00:23 e \"LE COSE SONO CAMBIATE\" a 00:24.\n\nA 00:25, la telecamera si muove mostrando il tavolo operatorio vuoto e le luci chirurgiche superiori. La scritta \"SOTTO TANTI ASPETTI\" appare a 00:25.\n\nA 00:26, l'inquadratura ritorna sui due medici, con l'uomo che continua a parlare.\nLe scritte riprendono con: \"IL PRIMO E' SICURAMENTE\" a 00:27, \"L'APPROCCIO FARMACOLOGICO\" a 00:28, \"ABBIAMO DEI FARMACI\" a 00:29, \"CHE SONO ESTREMAMENTE\" a 00:30, \"PIU' MANEGGEVOLI\" a 00:31, e \"E PIU' SICURI IL\" a 00:32.\n\nA 00:32, viene mostrato un primo piano di un palo per flebo con diverse pompe di infusione attaccate, con tubi e cavi che si diramano. La scritta \"SECONDO E' CHE TUTTI\" appare a 00:33.\n\nA 00:34, i due medici sono di nuovo visibili, con l'uomo che prosegue la sua spiegazione.\nLe scritte sullo schermo continuano: \"I PAZIENTI\" a 00:34, \"DEI QUALI IL CHIRURGO INDIVIDUA\" a 00:36, \"UNA NECESSITA' OPERATORIA\" a 00:37, \"VENGONO VALUTATI DA\" a 00:38, \"NOI ANESTESISTI\" a 00:40, \"PER CUI IL PUNTO CHIAVE\" a 00:41, \"DELL'INTERO PERCORSO\" a 00:42, \"E' LA VISITA\" a 00:43, e \"ANESTESIOLOGICA\" a 00:44.\n\nA 00:46, il video si concentra su un monitor \"Dräger Infinity Delta\", con una mano che interagisce con il touchscreen per inserire dati di un nuovo paziente. Il monitor mostra parametri vitali come frequenza cardiaca (HR), saturazione di ossigeno (SpO2), pressione sanguigna non invasiva (NBP) e pressione sanguigna invasiva (PIS).\nLe scritte in sovrimpressione sono: \"TEMPI ADEGUATI\" a 00:46, \"UNA VOLTA\" a 00:47, \"FATTO QUESTO E' NECESSARIO\" a 00:48, \"RIVOLGERSI A UNA STRUTTURA\" a 00:50, e \"CHE SIA ATTREZZATA\" a 00:51.\n\nA 00:51, l'inquadratura si allarga per mostrare una vista generale della sala operatoria, enfatizzando le luci chirurgiche sopra il tavolo.\nLe scritte finali in sovrimpressione recitano: \"LA RUESCH HA IL\" a 00:52, \"MEGLIO DISPONIBILE\" a 00:53, \"NELL'AMBITO DELLE\" a 00:54, \"TECNOLOGIE PER\" a 00:55, \"POTER AFFRONTARE\" a 00:56, e \"QUALSIASI PROBLEMA\" a 00:56.\n\nIl video si conclude a 00:57 con una schermata bianca che sfuma leggermente verso il blu al centro, mostrando il logo \"Fabiana La Porta\" in un carattere stilizzato blu scuro, con la dicitura \"Consulente di Chirurgia e Medicina estetica\" sottostante."
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 17719,
+            "candidatesTokenCount": 1821,
+            "totalTokenCount": 21416,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 19
+              },
+              {
+                "modality": "VIDEO",
+                "tokenCount": 15780
+              },
+              {
+                "modality": "AUDIO",
+                "tokenCount": 1920
+              }
+            ],
+            "thoughtsTokenCount": 1876
+          },
+          "modelVersion": "gemini-2.5-flash",
+          "responseId": "FPOZaKznHOHqkdUP7uS5uQE"
+        }
+      }
+    ],
+    "Video download": [
+      {
+        "json": {
+          "id": "7535936213316865302",
+          "title": "Valeria Marini Patty Pravo Carmen Di Pietro Ilary Blasi chirurgia estetica momenti divertenti e imbarazzanti in TV Francesca Fagnani trash #personaggifamosi #trashitaliatv #francescafagnani ",
+          "textLanguage": "it",
+          "views": 385025,
+          "likes": 22064,
+          "comments": 447,
+          "shares": 2112,
+          "bookmarks": 1519,
+          "hashtags": [
+            "personaggifamosi",
+            "trashitaliatv",
+            "francescafagnani"
+          ],
+          "channel": {
+            "name": "prisincolinescionalciusol",
+            "username": "trashtvemusica",
+            "id": "7210164139703698437",
+            "url": "https://www.tiktok.com/@trashtvemusica",
+            "avatar": "https://p16-common-sign-useastred.tiktokcdn-eu.com/tos-useast2a-avt-0068-euttp/1defa5361b42da447ea5edef8e5e227c~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=966ceb3f&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=b5ciRdcTHggJuA3ve%2Ff49MwKGYI%3D",
+            "verified": false,
+            "followers": 149677,
+            "following": 5,
+            "videos": null,
+            "region": null
+          },
+          "uploadedAt": 1754596883,
+          "uploadedAtFormatted": "2025-08-07T20:01:23.000Z",
+          "video": {
+            "width": 576,
+            "height": 1024,
+            "ratio": "540p",
+            "duration": 139.467,
+            "url": "https://v45.tiktokcdn-eu.com/a689214e1c64f497949971f5f29e0e17/689b3a23/video/tos/no1a/tos-no1a-ve-0068c001-no/owzfgEIRgLAR3AKePDLIqu0jQIq9fIAiGDgjAm/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=1526&bt=763&cs=0&ds=6&ft=XsFb8q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=0&rc=NmU5Omk2N2Y7aTozPGU6N0BpM3J3O3M5cnBqNTMzbzczNUAvLy5fYy81NV8xXzIzNS4xYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00095000",
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/osUpGBiBVYjARZyiAECBTCBPiaACAJxsIOEKx~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=6339649c&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=WvXP5PdgQ5lsHTUeKPWRlK9N1qk%3D",
+            "thumbnail": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/osUpGBiBVYjARZyiAECBTCBPiaACAJxsIOEKx~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=6339649c&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=WvXP5PdgQ5lsHTUeKPWRlK9N1qk%3D"
+          },
+          "song": {
+            "id": "7234217459228985345",
+            "title": "Comedy Scenes - Comical, stupid, odd, lovely (Drumless)(1441321)",
+            "artist": "Ponetto",
+            "album": null,
+            "duration": 130,
+            "cover": "https://p77-sg.tiktokcdn.com/aweme/720x720/tos-alisg-v-2774/4f0144d1eee94b6092c785219ffa5d2e.jpeg"
+          },
+          "subtitleInformation": [
+            {
+              "caption_format": "webvtt",
+              "caption_length": 1886,
+              "cla_subtitle_id": 7535948091075251000,
+              "complaint_id": 7535948091075251000,
+              "expire": 1757509027,
+              "is_auto_generated": true,
+              "is_original_caption": false,
+              "lang": "eng-US",
+              "language_code": "en",
+              "language_id": 2,
+              "source_tag": "vv_counter,",
+              "sub_id": -941346104,
+              "sub_version": "4",
+              "subtitle_type": 4,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v16-cla.tiktokcdn.com/afceec09f74ea4a7e5b8e64b9cc04a48/68c175a3/video/tos/no1a/tos-no1a-v-0037-no/da57485c388b44199070f9cae65b5a30/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=4952&bt=2476&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3J3O3M5cnBqNTMzbzczNUBpM3J3O3M5cnBqNTMzbzczNUAvZXNoMmRzXl5hLS1kMTFzYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+              "url_list": [
+                "https://v16-cla.tiktokcdn.com/afceec09f74ea4a7e5b8e64b9cc04a48/68c175a3/video/tos/no1a/tos-no1a-v-0037-no/da57485c388b44199070f9cae65b5a30/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=4952&bt=2476&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3J3O3M5cnBqNTMzbzczNUBpM3J3O3M5cnBqNTMzbzczNUAvZXNoMmRzXl5hLS1kMTFzYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://v19-cla.tiktokcdn.com/db83429869f6a52b2be3e48a19de58a6/68c175a3/video/tos/no1a/tos-no1a-v-0037-no/da57485c388b44199070f9cae65b5a30/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=4952&bt=2476&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3J3O3M5cnBqNTMzbzczNUBpM3J3O3M5cnBqNTMzbzczNUAvZXNoMmRzXl5hLS1kMTFzYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=eng-US&sign=2035500b99b335f3538e55c8d5c7c518&version=4&vid=v24044gl0000d2agamvog65pk8vtho20"
+              ],
+              "variant": "default"
+            },
+            {
+              "caption_format": "webvtt",
+              "caption_length": 2020,
+              "cla_subtitle_id": 7535947387156598000,
+              "complaint_id": 7535947387156598000,
+              "expire": 1757509027,
+              "is_auto_generated": true,
+              "is_original_caption": true,
+              "lang": "ita-IT",
+              "language_code": "it",
+              "language_id": 26,
+              "source_tag": "vv_counter,",
+              "sub_id": -2001015420,
+              "sub_version": "1",
+              "subtitle_type": 1,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v16-cla.tiktokcdn.com/2b8ef9705492da4f7040a820bb8c198c/68c175a3/video/tos/no1a/tos-no1a-v-0037-no/80300c48d8864c25822a7f5393232cb7/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=4952&bt=2476&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3J3O3M5cnBqNTMzbzczNUBpM3J3O3M5cnBqNTMzbzczNUAvZXNoMmRzXl5hLS1kMTFzYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+              "url_list": [
+                "https://v16-cla.tiktokcdn.com/2b8ef9705492da4f7040a820bb8c198c/68c175a3/video/tos/no1a/tos-no1a-v-0037-no/80300c48d8864c25822a7f5393232cb7/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=4952&bt=2476&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3J3O3M5cnBqNTMzbzczNUBpM3J3O3M5cnBqNTMzbzczNUAvZXNoMmRzXl5hLS1kMTFzYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://v19-cla.tiktokcdn.com/e8fa64141b6037d704aa0e7f032cecaf/68c175a3/video/tos/no1a/tos-no1a-v-0037-no/80300c48d8864c25822a7f5393232cb7/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=4952&bt=2476&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3J3O3M5cnBqNTMzbzczNUBpM3J3O3M5cnBqNTMzbzczNUAvZXNoMmRzXl5hLS1kMTFzYSMvZXNoMmRzXl5hLS1kMTFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=ita-IT&sign=c1929c2d0b65b63384453384c4085852&version=1%3Awhisper_lid&vid=v24044gl0000d2agamvog65pk8vtho20"
+              ],
+              "variant": "whisper_lid"
+            }
+          ],
+          "postPage": "https://www.tiktok.com/@trashtvemusica/video/7535936213316865302"
+        }
+      },
+      {
+        "json": {
+          "id": "7533533597890972950",
+          "title": "La paura prima dell’anestesia è normalissima, ma in sala operatoria trovi sguardi che rassicurano, mani esperte, e un’equipe che sa esattamente cosa fare. Con il nostro capo anestesista e uno staff medico super preparato, puoi davvero sentirti al sicuro. In Clinica Ruesch tutto è sotto controllo, sempre ☀ #fabianalaporta #clinicaruesch #medicinaestetica #chirurgiaestetica #consulentemedicinaestetica #beautyadvisor #esteticaavanzata #medicoestetico #chirurgoestetico #clinicaestetica #beautyclinic",
+          "textLanguage": "it",
+          "views": 84282,
+          "likes": 925,
+          "comments": 28,
+          "shares": 54,
+          "bookmarks": 155,
+          "hashtags": [],
+          "channel": {
+            "name": "fabiana.laporta",
+            "username": "fabiana.laporta",
+            "id": "7476408317674406934",
+            "url": "https://www.tiktok.com/@fabiana.laporta",
+            "avatar": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/0c607023e52780c28e983d789b09db99~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=ee86485f&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=FQPxFIBkj18hbnbxlKzgZzQ5n3o%3D",
+            "verified": false,
+            "followers": 297,
+            "following": 41,
+            "videos": null,
+            "region": null
+          },
+          "uploadedAt": 1754643300,
+          "uploadedAtFormatted": "2025-08-08T08:55:00.000Z",
+          "video": {
+            "width": 576,
+            "height": 1024,
+            "ratio": "540p",
+            "duration": 60.395,
+            "url": "https://v45.tiktokcdn-eu.com/14c8c9946e429e6c59e42b082d3fe196/689b39d4/video/tos/no1a/tos-no1a-ve-0068-no/osY0gjDg5IoKFc5yckfBVvIxPk2xfHCtAEForQ/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=1478&bt=739&cs=0&ds=6&ft=XsFb8q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=0&rc=PDhkaWY5NGVlOWg2OmU6ZUBpM3V1eGw5cjU6NTMzbzgzNUA1NV4yMy4uNl8xXjRiL2BiYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00095000",
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oUnRGAGJILFIAEskeEAAQVALRPYrF8flLFxrIf~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=03208b7c&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=G%2BwMvVTr1kjU%2FwcXq3jiNM3um5c%3D",
+            "thumbnail": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oUnRGAGJILFIAEskeEAAQVALRPYrF8flLFxrIf~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=03208b7c&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=G%2BwMvVTr1kjU%2FwcXq3jiNM3um5c%3D"
+          },
+          "song": {
+            "id": "7533533590400699158",
+            "title": "original sound - fabiana.laporta",
+            "artist": "fabiana.laporta",
+            "album": null,
+            "duration": 60,
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/0c607023e52780c28e983d789b09db99~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=ee86485f&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=FQPxFIBkj18hbnbxlKzgZzQ5n3o%3D"
+          },
+          "subtitleInformation": [
+            {
+              "caption_format": "webvtt",
+              "caption_length": 865,
+              "cla_subtitle_id": 7536872827509837000,
+              "complaint_id": 7536872827509837000,
+              "expire": 1757508948,
+              "is_auto_generated": true,
+              "is_original_caption": false,
+              "lang": "eng-US",
+              "language_code": "en",
+              "language_id": 2,
+              "source_tag": "vv_counter,",
+              "sub_id": -54815258,
+              "sub_version": "4",
+              "subtitle_type": 4,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v16-cla.tiktokcdn.com/eda479c85f6f4990f4fec2038555c489/68c17554/video/tos/no1a/tos-no1a-v-0037-no/430b0c291ee346e691471f135c858a78/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+              "url_list": [
+                "https://v16-cla.tiktokcdn.com/eda479c85f6f4990f4fec2038555c489/68c17554/video/tos/no1a/tos-no1a-v-0037-no/430b0c291ee346e691471f135c858a78/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://v19-cla.tiktokcdn.com/00de12f13be77832014b90f935f1d0f1/68c17554/video/tos/no1a/tos-no1a-v-0037-no/430b0c291ee346e691471f135c858a78/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=eng-US&sign=645b56d722453e63b35905a814190c73&version=4&vid=v24025gl0000d267p27og65ibuirpra0"
+              ],
+              "variant": "default"
+            },
+            {
+              "caption_format": "webvtt",
+              "caption_length": 960,
+              "cla_subtitle_id": 7536168769991986000,
+              "complaint_id": 7536168769991986000,
+              "expire": 1757508948,
+              "is_auto_generated": true,
+              "is_original_caption": true,
+              "lang": "ita-IT",
+              "language_code": "it",
+              "language_id": 26,
+              "source_tag": "vv_counter,",
+              "sub_id": 307701550,
+              "sub_version": "1",
+              "subtitle_type": 1,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v16-cla.tiktokcdn.com/7162dd9a101c432e27491fa6f82eeef9/68c17554/video/tos/no1a/tos-no1a-v-0037-no/f0e44626842743c2ad77fc8f9a9ef39b/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+              "url_list": [
+                "https://v16-cla.tiktokcdn.com/7162dd9a101c432e27491fa6f82eeef9/68c17554/video/tos/no1a/tos-no1a-v-0037-no/f0e44626842743c2ad77fc8f9a9ef39b/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://v19-cla.tiktokcdn.com/f39efeefd56cf88022539df4231b3e30/68c17554/video/tos/no1a/tos-no1a-v-0037-no/f0e44626842743c2ad77fc8f9a9ef39b/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=asAJ4q4fmbdPD12QXlzT3wUO-aaAMeF~O5&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=2025081112544718C4C4BAAFA36A73BD35&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=ita-IT&sign=217b48d4726aeb64f19169c3b91aaba2&version=1%3Awhisper_lid&vid=v24025gl0000d267p27og65ibuirpra0"
+              ],
+              "variant": "whisper_lid"
+            }
+          ],
+          "postPage": "https://www.tiktok.com/@fabiana.laporta/video/7533533597890972950"
+        }
+      },
+      {
+        "json": {
+          "id": "7535798085235117334",
+          "title": "#aurorabaruto #mura #medicinaestetica #chirurgiaestetica #tiktoker  @aurora ",
+          "textLanguage": "un",
+          "views": 1483185,
+          "likes": 81797,
+          "comments": 354,
+          "shares": 4781,
+          "bookmarks": 6651,
+          "hashtags": [
+            "aurorabaruto",
+            "mura",
+            "medicinaestetica",
+            "chirurgiaestetica",
+            "tiktoker"
+          ],
+          "channel": {
+            "name": "Dvora 🐝",
+            "username": "dvorancona",
+            "id": "7066098130970166277",
+            "url": "https://www.tiktok.com/@dvorancona",
+            "avatar": "https://p16-common-sign-useastred.tiktokcdn-eu.com/tos-useast2a-avt-0068-euttp/8834438594358d113713165acb634d5c~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=be524214&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=VqrdRaIE%2B7ejOn%2Bf7jZfQNd0pgo%3D",
+            "verified": false,
+            "followers": 90627,
+            "following": 37,
+            "videos": null,
+            "region": null
+          },
+          "uploadedAt": 1754564724,
+          "uploadedAtFormatted": "2025-08-07T11:05:24.000Z",
+          "video": {
+            "width": 576,
+            "height": 1024,
+            "ratio": "540p",
+            "duration": 41.667,
+            "url": "https://v45.tiktokcdn-eu.com/0953e6199aff07f737543f4de1f0a756/689b39c3/video/tos/no1a/tos-no1a-ve-0068c001-no/oQUodHhzIAA2QR35gIFjlikDYffULIIEFEBOUE/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=3146&bt=1573&cs=0&ds=6&ft=td_Lr8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=0&rc=ZztoZDw4Mzk2ZmY3NWk4OUBpam5mOnU5cnA7NTMzbzczNUAwLzYvL2IzNmIxLjQ0NjNfYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e0008d000",
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oQfREEhUj2YCyRfUU9BPI9zigCFHFoAIlLDkgE~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=9fe18256&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=NTzHME8MM%2B9myBQPoZzLQ5SHQTU%3D",
+            "thumbnail": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oQfREEhUj2YCyRfUU9BPI9zigCFHFoAIlLDkgE~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=9fe18256&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=NTzHME8MM%2B9myBQPoZzLQ5SHQTU%3D"
+          },
+          "song": {
+            "id": "7535798095976631062",
+            "title": "original sound - dvorancona",
+            "artist": "Dvora 🐝",
+            "album": null,
+            "duration": 41,
+            "cover": "https://p16-common-sign-useastred.tiktokcdn-eu.com/tos-useast2a-avt-0068-euttp/8834438594358d113713165acb634d5c~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=be524214&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=VqrdRaIE%2B7ejOn%2Bf7jZfQNd0pgo%3D"
+          },
+          "subtitleInformation": [
+            {
+              "caption_format": "webvtt",
+              "caption_length": 555,
+              "cla_subtitle_id": 7535798427998604000,
+              "complaint_id": 7535798427998604000,
+              "expire": 1757508931,
+              "is_auto_generated": false,
+              "is_original_caption": true,
+              "lang": "ita-IT",
+              "language_code": "it",
+              "language_id": 26,
+              "source_tag": "",
+              "sub_id": -1455253168,
+              "sub_version": "8",
+              "subtitle_type": 8,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v19-cla.tiktokcdn.com/3d4486860207e514092fafdcd893f984/68c17543/video/tos/no1a/tos-no1a-v-0037-no/89fd2bbdfd6e4ae986ea9bf7be14c043/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=21846&bt=10923&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=am5mOnU5cnA7NTMzbzczNUBpam5mOnU5cnA7NTMzbzczNUBlanIyMmQ0ZF5hLS1kMTFzYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00048000",
+              "url_list": [
+                "https://v19-cla.tiktokcdn.com/3d4486860207e514092fafdcd893f984/68c17543/video/tos/no1a/tos-no1a-v-0037-no/89fd2bbdfd6e4ae986ea9bf7be14c043/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=21846&bt=10923&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=am5mOnU5cnA7NTMzbzczNUBpam5mOnU5cnA7NTMzbzczNUBlanIyMmQ0ZF5hLS1kMTFzYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00048000",
+                "https://v16-cla.tiktokcdn.com/bd6fe265b3428c5cd76f266505b7bf98/68c17543/video/tos/no1a/tos-no1a-v-0037-no/89fd2bbdfd6e4ae986ea9bf7be14c043/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=21846&bt=10923&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=am5mOnU5cnA7NTMzbzczNUBpam5mOnU5cnA7NTMzbzczNUBlanIyMmQ0ZF5hLS1kMTFzYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00048000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=ita-IT&sign=a71c55810c73825848989f262bb834c0&version=8%3Awhisper_lid&vid=v24044gl0000d2a8gm7og65r57ucmkhg"
+              ],
+              "variant": "whisper_lid"
+            },
+            {
+              "caption_format": "webvtt",
+              "caption_length": 516,
+              "cla_subtitle_id": 7535806750337060000,
+              "complaint_id": 7535806750337060000,
+              "expire": 1757508931,
+              "is_auto_generated": true,
+              "is_original_caption": false,
+              "lang": "eng-US",
+              "language_code": "en",
+              "language_id": 2,
+              "source_tag": "vv_counter,",
+              "sub_id": 1997902001,
+              "sub_version": "4",
+              "subtitle_type": 4,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v19-cla.tiktokcdn.com/a9ac470663ca9858d54e4a1f60905b5a/68c17543/video/tos/no1a/tos-no1a-v-0037-no/1530f383ddad496c9fcf56b41cb07935/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=21846&bt=10923&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=am5mOnU5cnA7NTMzbzczNUBpam5mOnU5cnA7NTMzbzczNUBlanIyMmQ0ZF5hLS1kMTFzYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00048000",
+              "url_list": [
+                "https://v19-cla.tiktokcdn.com/a9ac470663ca9858d54e4a1f60905b5a/68c17543/video/tos/no1a/tos-no1a-v-0037-no/1530f383ddad496c9fcf56b41cb07935/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=21846&bt=10923&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=am5mOnU5cnA7NTMzbzczNUBpam5mOnU5cnA7NTMzbzczNUBlanIyMmQ0ZF5hLS1kMTFzYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00048000",
+                "https://v16-cla.tiktokcdn.com/debe488f6ea4535682c8aed3c92b2ce8/68c17543/video/tos/no1a/tos-no1a-v-0037-no/1530f383ddad496c9fcf56b41cb07935/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=21846&bt=10923&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=am5mOnU5cnA7NTMzbzczNUBpam5mOnU5cnA7NTMzbzczNUBlanIyMmQ0ZF5hLS1kMTFzYSNlanIyMmQ0ZF5hLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00048000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=eng-US&sign=c921a0b837b96f6719687542114f522a&version=4&vid=v24044gl0000d2a8gm7og65r57ucmkhg"
+              ],
+              "variant": "default"
+            }
+          ],
+          "postPage": "https://www.tiktok.com/@dvorancona/video/7535798085235117334"
+        }
+      },
+      {
+        "json": {
+          "id": "7535478397242297622",
+          "title": "Hai provato di tutto per dimagrire ma nulla funziona? Mounjaro potrebbe essere la soluzione giusta, sempre con il controllo medico e un piano personalizzato! ✨ @Drs.Ferrucci Medicina Estetica  E tu, ne hai mai sentito parlare?  #farmaci #dimagrire #mounjaro #medicinaestetica #salerno  ",
+          "textLanguage": "it",
+          "views": 156075,
+          "likes": 1898,
+          "comments": 293,
+          "shares": 791,
+          "bookmarks": 771,
+          "hashtags": [
+            "farmaci",
+            "dimagrire",
+            "mounjaro",
+            "medicinaestetica",
+            "salerno"
+          ],
+          "channel": {
+            "name": "goldclinic.salerno",
+            "username": "goldclinic.salerno",
+            "id": "7457548348443673622",
+            "url": "https://www.tiktok.com/@goldclinic.salerno",
+            "avatar": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/702095b0ffa380b06fd6f5d7084ca7ba~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=cc33c73e&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=EDakDUH5m7KY2NHZBaTmrNgmAXs%3D",
+            "verified": false,
+            "followers": 12642,
+            "following": 76,
+            "videos": null,
+            "region": null
+          },
+          "uploadedAt": 1754490290,
+          "uploadedAtFormatted": "2025-08-06T14:24:50.000Z",
+          "video": {
+            "width": 576,
+            "height": 1024,
+            "ratio": "540p",
+            "duration": 61.967,
+            "url": "https://v45.tiktokcdn-eu.com/b9fed1cc57767690c5cadebd8974b277/689b39d7/video/tos/no1a/tos-no1a-ve-0068c001-no/okzZcQFeoGF3CUUTBtFEgVDgEkAR91yEInfXk2/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=1528&bt=764&cs=0&ds=6&ft=td_Lr8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=0&rc=ZTdkNDRnPDw5ZDk1NTxpPEBpM2Q7eHA5cnJwNTMzbzczNUAzM2M2LzQzXjIxMTA1Yl9jYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00095000",
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oITAFsA1iBlCNk0JBYDDa6ZiEABBbXZ1PpIAE~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=ed9bac59&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=Dd8grtE5dJkCIFMvDU9dgafaSm8%3D",
+            "thumbnail": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oITAFsA1iBlCNk0JBYDDa6ZiEABBbXZ1PpIAE~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=ed9bac59&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=Dd8grtE5dJkCIFMvDU9dgafaSm8%3D"
+          },
+          "song": {
+            "id": "7179679214566639618",
+            "title": "vlog, chill out, calm daily life(1370843)",
+            "artist": "SUNNY HOOD STUDIO",
+            "album": null,
+            "duration": 215,
+            "cover": "https://p77-sg.tiktokcdn.com/aweme/720x720/tos-alisg-v-2774/55bd140de38546eeb87ad7b20bdc00d0.jpeg"
+          },
+          "subtitleInformation": [
+            {
+              "caption_format": "webvtt",
+              "caption_length": 913,
+              "cla_subtitle_id": 7535520942169525000,
+              "complaint_id": 7535520942169525000,
+              "expire": 1757508951,
+              "is_auto_generated": true,
+              "is_original_caption": false,
+              "lang": "eng-US",
+              "language_code": "en",
+              "language_id": 2,
+              "source_tag": "vv_counter,",
+              "sub_id": -1350125972,
+              "sub_version": "4",
+              "subtitle_type": 4,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v19-cla.tiktokcdn.com/80ce687ae96322bfcff5692d231e3087/68c17557/video/tos/no1a/tos-no1a-v-0037-no/b8764481bfe74adc9ff8673a04a36d27/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=34480&bt=17240&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M2Q7eHA5cnJwNTMzbzczNUBpM2Q7eHA5cnJwNTMzbzczNUBja2FtMmQ0XjZhLS1kMTFzYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+              "url_list": [
+                "https://v19-cla.tiktokcdn.com/80ce687ae96322bfcff5692d231e3087/68c17557/video/tos/no1a/tos-no1a-v-0037-no/b8764481bfe74adc9ff8673a04a36d27/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=34480&bt=17240&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M2Q7eHA5cnJwNTMzbzczNUBpM2Q7eHA5cnJwNTMzbzczNUBja2FtMmQ0XjZhLS1kMTFzYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://v16-cla.tiktokcdn.com/9ab671e106eb353aa644ae7c99bce79d/68c17557/video/tos/no1a/tos-no1a-v-0037-no/b8764481bfe74adc9ff8673a04a36d27/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=34480&bt=17240&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M2Q7eHA5cnJwNTMzbzczNUBpM2Q7eHA5cnJwNTMzbzczNUBja2FtMmQ0XjZhLS1kMTFzYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=eng-US&sign=191fb2b12328814fb7b67d22c7e26dd2&version=4&vid=v24044gl0000d29mao7og65mpud8naf0"
+              ],
+              "variant": "default"
+            },
+            {
+              "caption_format": "webvtt",
+              "caption_length": 964,
+              "cla_subtitle_id": 7535502407145524000,
+              "complaint_id": 7535502407145524000,
+              "expire": 1757508951,
+              "is_auto_generated": true,
+              "is_original_caption": true,
+              "lang": "ita-IT",
+              "language_code": "it",
+              "language_id": 26,
+              "source_tag": "vv_counter,",
+              "sub_id": 610021056,
+              "sub_version": "1",
+              "subtitle_type": 1,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v19-cla.tiktokcdn.com/681551cd26141f960c6c706f3f9b22d5/68c17557/video/tos/no1a/tos-no1a-v-0037-no/34b2e828e2a34520b806a1d71a3265d8/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=34480&bt=17240&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M2Q7eHA5cnJwNTMzbzczNUBpM2Q7eHA5cnJwNTMzbzczNUBja2FtMmQ0XjZhLS1kMTFzYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+              "url_list": [
+                "https://v19-cla.tiktokcdn.com/681551cd26141f960c6c706f3f9b22d5/68c17557/video/tos/no1a/tos-no1a-v-0037-no/34b2e828e2a34520b806a1d71a3265d8/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=34480&bt=17240&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M2Q7eHA5cnJwNTMzbzczNUBpM2Q7eHA5cnJwNTMzbzczNUBja2FtMmQ0XjZhLS1kMTFzYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://v16-cla.tiktokcdn.com/bf1f7421a3cfafd5c957cad4bd45ed91/68c17557/video/tos/no1a/tos-no1a-v-0037-no/34b2e828e2a34520b806a1d71a3265d8/?a=1233&bti=NTY6QGo0QHM6OjZANDQuYCMucCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=34480&bt=17240&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M2Q7eHA5cnJwNTMzbzczNUBpM2Q7eHA5cnJwNTMzbzczNUBja2FtMmQ0XjZhLS1kMTFzYSNja2FtMmQ0XjZhLS1kMTFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=ita-IT&sign=45406cc9ad5a9b03ffc6d96477190e64&version=1%3Awhisper_lid&vid=v24044gl0000d29mao7og65mpud8naf0"
+              ],
+              "variant": "whisper_lid"
+            }
+          ],
+          "postPage": "https://www.tiktok.com/@goldclinic.salerno/video/7535478397242297622"
+        }
+      },
+      {
+        "json": {
+          "id": "7533533597890972950",
+          "title": "La paura prima dell’anestesia è normalissima, ma in sala operatoria trovi sguardi che rassicurano, mani esperte, e un’equipe che sa esattamente cosa fare. Con il nostro capo anestesista e uno staff medico super preparato, puoi davvero sentirti al sicuro. In Clinica Ruesch tutto è sotto controllo, sempre ☀ #fabianalaporta #clinicaruesch #medicinaestetica #chirurgiaestetica #consulentemedicinaestetica #beautyadvisor #esteticaavanzata #medicoestetico #chirurgoestetico #clinicaestetica #beautyclinic",
+          "textLanguage": "it",
+          "views": 84282,
+          "likes": 925,
+          "comments": 28,
+          "shares": 54,
+          "bookmarks": 155,
+          "hashtags": [],
+          "channel": {
+            "name": "fabiana.laporta",
+            "username": "fabiana.laporta",
+            "id": "7476408317674406934",
+            "url": "https://www.tiktok.com/@fabiana.laporta",
+            "avatar": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/0c607023e52780c28e983d789b09db99~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=ee86485f&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=FQPxFIBkj18hbnbxlKzgZzQ5n3o%3D",
+            "verified": false,
+            "followers": 297,
+            "following": 41,
+            "videos": null,
+            "region": null
+          },
+          "uploadedAt": 1754643300,
+          "uploadedAtFormatted": "2025-08-08T08:55:00.000Z",
+          "video": {
+            "width": 576,
+            "height": 1024,
+            "ratio": "540p",
+            "duration": 60.395,
+            "url": "https://v45.tiktokcdn-eu.com/1c79185add668785f9b2bee7d611f139/689b39d6/video/tos/no1a/tos-no1a-ve-0068-no/osY0gjDg5IoKFc5yckfBVvIxPk2xfHCtAEForQ/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=1478&bt=739&cs=0&ds=6&ft=td_Lr8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=0&rc=PDhkaWY5NGVlOWg2OmU6ZUBpM3V1eGw5cjU6NTMzbzgzNUA1NV4yMy4uNl8xXjRiL2BiYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00095000",
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oUnRGAGJILFIAEskeEAAQVALRPYrF8flLFxrIf~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=03208b7c&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=G%2BwMvVTr1kjU%2FwcXq3jiNM3um5c%3D",
+            "thumbnail": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-p-0037-no/oUnRGAGJILFIAEskeEAAQVALRPYrF8flLFxrIf~tplv-tiktokx-cropcenter:500:800.jpeg?biz_tag=musically_video.video_cover&dr=10397&idc=no1a&ps=13740610&refresh_token=03208b7c&shcp=9b759fb9&shp=c1333099&t=4d5b0474&x-expires=1754935200&x-signature=G%2BwMvVTr1kjU%2FwcXq3jiNM3um5c%3D"
+          },
+          "song": {
+            "id": "7533533590400699158",
+            "title": "original sound - fabiana.laporta",
+            "artist": "fabiana.laporta",
+            "album": null,
+            "duration": 60,
+            "cover": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/0c607023e52780c28e983d789b09db99~tplv-tiktokx-cropcenter-q:1080:1080:q70.heic?dr=9608&idc=no1a&ps=87d6e48a&refresh_token=ee86485f&s=SEARCH&sc=avatar&shcp=c1333099&shp=d05b14bd&t=223449c4&x-expires=1755000000&x-signature=FQPxFIBkj18hbnbxlKzgZzQ5n3o%3D"
+          },
+          "subtitleInformation": [
+            {
+              "caption_format": "webvtt",
+              "caption_length": 960,
+              "cla_subtitle_id": 7536168769991986000,
+              "complaint_id": 7536168769991986000,
+              "expire": 1757508950,
+              "is_auto_generated": true,
+              "is_original_caption": true,
+              "lang": "ita-IT",
+              "language_code": "it",
+              "language_id": 26,
+              "source_tag": "vv_counter,",
+              "sub_id": 307701550,
+              "sub_version": "1",
+              "subtitle_type": 1,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v19-cla.tiktokcdn.com/9b88776a39911f9d8c6b3f938b3665ac/68c17556/video/tos/no1a/tos-no1a-v-0037-no/f0e44626842743c2ad77fc8f9a9ef39b/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+              "url_list": [
+                "https://v19-cla.tiktokcdn.com/9b88776a39911f9d8c6b3f938b3665ac/68c17556/video/tos/no1a/tos-no1a-v-0037-no/f0e44626842743c2ad77fc8f9a9ef39b/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://v16-cla.tiktokcdn.com/90be9c5b7a9d66216442ae80736a92b6/68c17556/video/tos/no1a/tos-no1a-v-0037-no/f0e44626842743c2ad77fc8f9a9ef39b/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=ita-IT&sign=217b48d4726aeb64f19169c3b91aaba2&version=1%3Awhisper_lid&vid=v24025gl0000d267p27og65ibuirpra0"
+              ],
+              "variant": "whisper_lid"
+            },
+            {
+              "caption_format": "webvtt",
+              "caption_length": 865,
+              "cla_subtitle_id": 7536872827509837000,
+              "complaint_id": 7536872827509837000,
+              "expire": 1757508950,
+              "is_auto_generated": true,
+              "is_original_caption": false,
+              "lang": "eng-US",
+              "language_code": "en",
+              "language_id": 2,
+              "source_tag": "vv_counter,",
+              "sub_id": -54815258,
+              "sub_version": "4",
+              "subtitle_type": 4,
+              "translation_type": 0,
+              "translator_id": 0,
+              "url": "https://v19-cla.tiktokcdn.com/d14b12d1340d53d91cef97613a6649dd/68c17556/video/tos/no1a/tos-no1a-v-0037-no/430b0c291ee346e691471f135c858a78/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+              "url_list": [
+                "https://v19-cla.tiktokcdn.com/d14b12d1340d53d91cef97613a6649dd/68c17556/video/tos/no1a/tos-no1a-v-0037-no/430b0c291ee346e691471f135c858a78/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://v16-cla.tiktokcdn.com/853c5e3a01c0957dda3438bae9097717/68c17556/video/tos/no1a/tos-no1a-v-0037-no/430b0c291ee346e691471f135c858a78/?a=1233&bti=NEBzNTY6QGo6OjZALnAjNDQuYCMxNDNg&ch=0&cr=13&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C&cv=1&br=17742&bt=8871&cs=0&ds=4&ft=gdpEk8QLodzR12NvXGATWIxRgQQ.xq_45SY&mime_type=video_mp4&qs=13&rc=M3V1eGw5cjU6NTMzbzgzNUBpM3V1eGw5cjU6NTMzbzgzNUBebWZfMmQ0bTNhLS1kLzFzYSNebWZfMmQ0bTNhLS1kLzFzcw%3D%3D&vvpl=1&l=20250811125450350B122A2B79F153708B&btag=e00050000",
+                "https://vas-useast2a.tiktokv.com/tiktok/v1/subtitle/url?aid=1233&format=webvtt&language=eng-US&sign=645b56d722453e63b35905a814190c73&version=4&vid=v24025gl0000d267p27og65ibuirpra0"
+              ],
+              "variant": "default"
+            }
+          ],
+          "postPage": "https://www.tiktok.com/@fabiana.laporta/video/7533533597890972950"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Upload to Gemini1": {
+      "main": [
+        [
+          {
+            "node": "Get Analysis1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Analysis1": {
+      "main": [
+        [
+          {
+            "node": "Set field",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 5s1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s1": {
+      "main": [
+        [
+          {
+            "node": "Get Analysis1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Video download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set field": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video download": {
+      "main": [
+        [
+          {
+            "node": "Upload to Gemini1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "060a418b-7a98-41f7-81a4-314a3a300c3a",
+  "meta": {
+    "instanceId": "5d0c499275db8926aee599ed16aab49a66a4b63997c38d6cdb96744cce6a4337"
+  },
+  "id": "hsKa9EwDJwS5PH8f",
+  "tags": []
+}

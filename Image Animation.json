@@ -1,0 +1,817 @@
+{
+  "name": "Image Animation",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/image-to-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "=Create a highly professional slow motion video from the provided photo. Simulate a smooth, realistic 3D turntable rotation around the subject, as if the person is slowly turning gradually. The movement should be continuous, slow, and elegant. Fixed camera."
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $('Imgbb - Upload input file').item.json.data.url }}"
+            },
+            {
+              "name": "duration",
+              "value": "5"
+            },
+            {
+              "name": "negative_prompt",
+              "value": "={{ $json['negative prompt'] }}"
+            },
+            {
+              "name": "cfg_scale",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1328,
+        192
+      ],
+      "id": "8fe29f7a-6d67-4854-9453-d8302a957a58",
+      "name": "Fal.ai - Create video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "x3gr2ouH4RB1fx3L",
+          "name": "ILR - Fal.ai"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ywQFsOuFVtRpeyw9JTtr0A4ZCB7W7Bix",
+          "mode": "list",
+          "cachedResultName": "test video",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ywQFsOuFVtRpeyw9JTtr0A4ZCB7W7Bix"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -48
+      ],
+      "id": "1a38313d-d57a-48a8-bdf6-74633f411e7b",
+      "name": "Upload input file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DX8lZ5JlWxhdbD4S",
+          "name": "Google Drive account di Davide"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1536,
+        -48
+      ],
+      "id": "f8da7f54-0612-404c-88cc-8af4a5b969c6",
+      "name": "Imgbb - Upload input file",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "QUTUX6nwOVlXCly2",
+          "name": "IMGBB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1328,
+        -48
+      ],
+      "id": "9e8ea2e2-9f1d-43f1-97aa-5c9430619b23",
+      "name": "Store input file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DX8lZ5JlWxhdbD4S",
+          "name": "Google Drive account di Davide"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "=Results",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1ywQFsOuFVtRpeyw9JTtr0A4ZCB7W7Bix",
+          "mode": "list",
+          "cachedResultName": "test video",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ywQFsOuFVtRpeyw9JTtr0A4ZCB7W7Bix"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1728,
+        -48
+      ],
+      "id": "ee968940-51fd-4ed6-8526-38abaeeaf5e5",
+      "name": "Create output folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DX8lZ5JlWxhdbD4S",
+          "name": "Google Drive account di Davide"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  item.json.counter = 0;\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        192
+      ],
+      "id": "4444b5cb-d0f7-4641-bf7a-d793f388d57a",
+      "name": "Set counter"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  item.json.counter = (item.json.counter || 0) + 1;\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        192
+      ],
+      "id": "5a5a1cb5-4164-45c3-b3f4-77b3e118a744",
+      "name": "counter ++"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1728,
+        192
+      ],
+      "id": "7819690b-a4fd-4d39-8ea1-ab66cb1af507",
+      "name": "Wait 2 minutes",
+      "webhookId": "3d8c8c13-fddb-41de-8af9-e5466ba9bb3f"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Upload input file').item.json.id }}_result",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Create output folder').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2816,
+        160
+      ],
+      "id": "093efd66-afb7-4b70-a86a-fcfab5edd61a",
+      "name": "Upload output video",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DX8lZ5JlWxhdbD4S",
+          "name": "Google Drive account di Davide"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/kling-video/requests/{{ $('Fal.ai - Get status').item.json.request_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2352,
+        176
+      ],
+      "id": "2b996ea3-d6ce-4f0e-a1f9-9d238b2ff12c",
+      "name": "Fal.ai - Get output video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "x3gr2ouH4RB1fx3L",
+          "name": "ILR - Fal.ai"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a58dbafc-8280-41a7-8416-78bcc5af0429",
+              "leftValue": "={{ $json.error.code }}",
+              "rightValue": "ERR_BAD_REQUEST",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "694ef9fb-5f7c-47cc-94b7-ebf2756d4ecc",
+              "leftValue": "={{ $json.counter }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2576,
+        384
+      ],
+      "id": "bea8025a-2963-4612-bda1-6c2751cc69e1",
+      "name": "Is bad request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d5699921-4e08-4be5-800f-66eddd18476f",
+              "leftValue": "={{ $('Fal.ai - Get status').item.json.status }}",
+              "rightValue": "IN_QUEUE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "6ae49777-ac14-4312-994f-fd06d380c894",
+              "leftValue": "={{ $('Fal.ai - Get status').item.json.status }}",
+              "rightValue": "IN_PROGRESS",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2368,
+        640
+      ],
+      "id": "8c8201f7-471e-4dae-8ab0-8774be0cd40b",
+      "name": "Is still processing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2a5fe562-9d7c-40c3-b955-1699349b1bbe",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2128,
+        192
+      ],
+      "id": "14f9d05f-ddb4-4de4-9d54-82b8270dfa14",
+      "name": "Is completed"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11BJ7E5XO2xQnBtSPMetYb1_tsvJhozEyQrYM8e0x2Qo",
+          "mode": "list",
+          "cachedResultName": "Generazione immagini_Log errori",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11BJ7E5XO2xQnBtSPMetYb1_tsvJhozEyQrYM8e0x2Qo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11BJ7E5XO2xQnBtSPMetYb1_tsvJhozEyQrYM8e0x2Qo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Immagine di riferimento": "={{ $('getStatus1').item.json.request_id }}",
+            "Errore": "={{ $json.error.code }} - immagine non conforme alle policy"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Immagine di riferimento",
+              "displayName": "Immagine di riferimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Errore",
+              "displayName": "Errore",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2816,
+        368
+      ],
+      "id": "88a49c77-2d2d-4e63-8228-8a3b99ce61da",
+      "name": "Error generating video",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tXerIlzraMLBvG2k",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        624
+      ],
+      "id": "8961d879-f7d8-430c-b392-54ba129a81b0",
+      "name": "Wait 5 seconds",
+      "webhookId": "af075b1d-a5c0-43fc-927b-25ea1fcc134a"
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/kling-video/requests/{{ $json.request_id }}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        192
+      ],
+      "id": "494cc49a-ba59-48b8-9414-3eca722181b0",
+      "name": "Fal.ai - Get status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "x3gr2ouH4RB1fx3L",
+          "name": "ILR - Fal.ai"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11BJ7E5XO2xQnBtSPMetYb1_tsvJhozEyQrYM8e0x2Qo",
+          "mode": "list",
+          "cachedResultName": "Generazione immagini_Log errori",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11BJ7E5XO2xQnBtSPMetYb1_tsvJhozEyQrYM8e0x2Qo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11BJ7E5XO2xQnBtSPMetYb1_tsvJhozEyQrYM8e0x2Qo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Immagine di riferimento": "=",
+            "Errore": "=Error retrieving status"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Immagine di riferimento",
+              "displayName": "Immagine di riferimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Errore",
+              "displayName": "Errore",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2592,
+        848
+      ],
+      "id": "58599637-26aa-4ff9-bb33-6850921834f2",
+      "name": "Error getting video status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tXerIlzraMLBvG2k",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.video.url }}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2576,
+        160
+      ],
+      "id": "465f472a-0087-424a-809c-caf2e736420c",
+      "name": "HTTP - Download output video"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fal.ai - Create video": {
+      "main": [
+        [
+          {
+            "node": "counter ++",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload input file": {
+      "main": [
+        [
+          {
+            "node": "Store input file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imgbb - Upload input file": {
+      "main": [
+        [
+          {
+            "node": "Create output folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store input file": {
+      "main": [
+        [
+          {
+            "node": "Imgbb - Upload input file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create output folder": {
+      "main": [
+        [
+          {
+            "node": "Set counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set counter": {
+      "main": [
+        [
+          {
+            "node": "Fal.ai - Create video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "counter ++": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 minutes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 minutes": {
+      "main": [
+        [
+          {
+            "node": "Fal.ai - Get status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload output video": {
+      "main": [
+        []
+      ]
+    },
+    "Fal.ai - Get output video": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Download output video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is bad request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is bad request": {
+      "main": [
+        [
+          {
+            "node": "Error generating video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fal.ai - Create video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is still processing": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error getting video status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is completed": {
+      "main": [
+        [
+          {
+            "node": "Fal.ai - Get output video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is still processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 seconds": {
+      "main": [
+        [
+          {
+            "node": "Fal.ai - Get status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fal.ai - Get status": {
+      "main": [
+        [
+          {
+            "node": "Is completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Download output video": {
+      "main": [
+        [
+          {
+            "node": "Upload output video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "QsJvkFpVMTnIcioc"
+  },
+  "versionId": "226bf803-d908-4c3e-b044-49d932ec4906",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d0c499275db8926aee599ed16aab49a66a4b63997c38d6cdb96744cce6a4337"
+  },
+  "id": "6xktoQ8p1WtztuOl",
+  "tags": []
+}
